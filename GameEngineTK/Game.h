@@ -5,6 +5,15 @@
 #pragma once
 
 #include "StepTimer.h"
+#include "DebugCamera.h"
+
+#include <PrimitiveBatch.h>		//PrimitiveBatch
+#include <VertexTypes.h>		//VertexPositionColor
+#include <Effects.h>			//BasicEffect
+#include <CommonStates.h>		//CommonStates
+#include <SimpleMath.h>			//Vecter3
+
+#include <Model.h>
 
 
 // A basic game implementation that creates a D3D11 device and
@@ -62,4 +71,28 @@ private:
 
     // Rendering loop timer.
     DX::StepTimer                                   m_timer;
+
+	//	プリミティブバッチ
+	//std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>> m_batch;
+	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionNormal>> m_batch;
+	//	エフェクト
+	std::unique_ptr<DirectX::BasicEffect> m_effect;
+	//	入力
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+	//	汎用ステート設定
+	std::unique_ptr<DirectX::CommonStates> m_states;
+
+	DirectX::SimpleMath::Matrix m_world;
+	DirectX::SimpleMath::Matrix m_view;
+	DirectX::SimpleMath::Matrix m_proj;
+
+	//	デバッグカメラ
+	std::unique_ptr<DebugCamera> m_debugCamera;
+
+	//	エフェクトファクトリ
+	std::unique_ptr<DirectX::EffectFactory> m_factory;
+	//	モデル
+	std::unique_ptr<DirectX::Model> m_modelSkydome;	//天球
+	std::unique_ptr<DirectX::Model> m_modelGround;	//地面
+
 };
