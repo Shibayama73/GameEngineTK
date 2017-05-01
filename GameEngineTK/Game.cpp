@@ -73,6 +73,8 @@ void Game::Initialize(HWND window, int width, int height)
 	//	モデル生成
 	m_modelSkydome = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Skydome.cmo", *m_factory);
 	m_modelGround = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Ground.cmo", *m_factory);
+	for (int i = 0; i < 20; i++)
+	m_modelSky[i] = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/sky.cmo", *m_factory);
 
 	//====================================================================
 
@@ -92,13 +94,48 @@ void Game::Tick()
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {
-    float elapsedTime = float(timer.GetElapsedSeconds());
+	float elapsedTime = float(timer.GetElapsedSeconds());
 
-    // TODO: Add your game logic here.
-    elapsedTime;
+	// TODO: Add your game logic here.
+	elapsedTime;
 
 	//	毎フレーム処理はここから
 	m_debugCamera->Update();	//デバッグカメラ更新
+
+	time++;
+
+	//	空球ワールド行列の計算
+	//	スケーリング
+	Matrix scalemat = Matrix::CreateScale(1.0f);	//倍
+
+	for (int i = 0; i < 20; i++)
+	{
+		//	ロール
+		Matrix rotmatz = Matrix::CreateRotationZ(XMConvertToRadians(36.0f*i)+time);
+		//	ピッチ（仰角）
+		Matrix rotmatx = Matrix::CreateRotationX(XMConvertToRadians(90.0f));
+		//	ヨー（方位角）
+		Matrix rotmaty = Matrix::CreateRotationY(XMConvertToRadians(0.0f));
+
+		//	回転行列の合成
+		//Matrix rotmat = rotmatz * rotmatx * rotmaty;
+		Matrix rotmat = rotmatx * rotmatz * rotmaty;
+
+		//	平行移動
+		Matrix transmat;
+		if (i < 10)
+			transmat = Matrix::CreateTranslation(20, 0, 0);
+		else
+		{
+			transmat = Matrix::CreateTranslation(40, 0, 0);
+		}
+		
+		//	ワールド行列の合成(S*R*T)
+		//m_worldSky = scalemat*rotmat*transmat;
+		//m_worldSky[i] = scalemat * rotmat * transmat * rotmat;
+		m_worldSky[i] = scalemat * transmat* rotmat;
+
+	}
 
 }
 
@@ -158,6 +195,8 @@ void Game::Render()
 	//	モデルの描画
 	m_modelSkydome->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
 	m_modelGround->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
+	for (int i = 0; i < 20; i++)
+	m_modelSky[i]->Draw(m_d3dContext.Get(), *m_states, m_worldSky[i], m_view, m_proj);
 
 	//	描画
 	m_batch->Begin();
