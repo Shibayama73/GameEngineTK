@@ -12,6 +12,7 @@
 #include <Effects.h>			//BasicEffect
 #include <CommonStates.h>		//CommonStates
 #include <SimpleMath.h>			//Vecter3
+#include <Keyboard.h>			//キーボード
 
 #include <Model.h>
 
@@ -94,12 +95,30 @@ private:
 	//	モデル
 	std::unique_ptr<DirectX::Model> m_modelSkydome;	//天球
 	std::unique_ptr<DirectX::Model> m_modelGround;	//地面
-	std::unique_ptr<DirectX::Model> m_modelSky[20];	//空球
+	std::unique_ptr<DirectX::Model> m_modelSky;		//空球
+	std::unique_ptr<DirectX::Model> m_modelTespot;	//ティーポット
+	std::unique_ptr<DirectX::Model> m_modelHead;	//機体
 
-	//	空球のワールド行列
-	DirectX::SimpleMath::Matrix m_worldSky[20];
+	//	ワールド行列
+	DirectX::SimpleMath::Matrix m_worldSky[20];		//空球
+	DirectX::SimpleMath::Matrix m_worldTeaPot[20];	//ティーポット
 
-	int time = 0;
+	float m_angleSky = 0;	//角度
 
+	float m_rotationTeapot = 0;	//回転
+
+	float m_rad[20];		//角度
+	float m_distance[20];	//距離
+
+	float m_scale;
+	float m_time;
+	float m_val;
+
+	std::unique_ptr<DirectX::Keyboard> m_keyboard;	//	キーボード
+
+	DirectX::SimpleMath::Vector3 m_headPos;		//	自機の移動座標
+	DirectX::SimpleMath::Matrix m_worldHead;	//	自機のワールド行列
+
+	float headAngle;	//	旋回
 
 };
