@@ -96,6 +96,11 @@ void Game::Initialize(HWND window, int width, int height)
 	m_keyboard = std::make_unique<Keyboard>();
 
 	headAngle = 0.0f;
+
+	//	カメラの生成
+	m_Camera = std::make_unique<Camera>(m_outputWidth, m_outputHeight);
+	m_headPos = Vector3(0, 0, 30);
+	m_eyePos = Vector3(0, 0, 33);
 	//====================================================================
 
 }
@@ -251,6 +256,8 @@ void Game::Update(DX::StepTimer const& timer)
 
 		//	自機の座標を移動
 		m_headPos += moveV;
+
+
 	}
 	//	Sキーが押されてるとき後退
 	if (key.S)
@@ -264,9 +271,10 @@ void Game::Update(DX::StepTimer const& timer)
 		//Matrix rotmaty = Matrix::CreateRotationY(XMConvertToRadians(headAngle));
 		//moveV = Vector3::TransformNormal(moveV, rotmaty);
 
-
 		//	自機の座標を移動
 		m_headPos += moveV;
+
+
 	}
 	//	Aキーが押されてるとき左旋回
 	if (key.A)
@@ -305,6 +313,26 @@ void Game::Update(DX::StepTimer const& timer)
 		m_worldHead = rotmat * transmat;
 
 	}
+
+	//	カメラの設定
+	const float CAMERA_DISTANCE = 5.0f;
+	Vector3 eyepos, refpos;
+
+	refpos = m_headPos + Vector3(0, 2.0f, 0);
+	Vector3 cameraY(0, 0, CAMERA_DISTANCE);
+
+	Matrix rotmat = Matrix::CreateRotationY(headAngle);
+	cameraY = Vector3::TransformNormal(cameraY, rotmat);
+
+	eyepos = refpos + cameraY;
+
+
+	m_Camera->SetRefPos(refpos);
+	//	カメラの更新
+	m_Camera->SetEyePos(eyepos);
+	m_Camera->Update();
+	m_view = m_Camera->GetViewMatrix();
+	m_proj = m_Camera->GetProjectionMatrix();
 
 
 }
@@ -347,14 +375,39 @@ void Game::Render()
 	//	Vector3(0,0,0),			//カメラ参照視点
 	//	Vector3(0,1,0));		//上方向ベクトル
 	//	デバッグカメラからビュー行列取得
-	m_view = m_debugCamera->GetCameraMatrix();
+	//m_view = m_debugCamera->GetCameraMatrix();
 
-	//	プロジェクション行列生成
-	m_proj = Matrix::CreatePerspectiveFieldOfView(
-		XM_PI / 4.f,									//視野角(上下方向)
-		float(m_outputWidth) / float(m_outputHeight),	//アスペクト比 
-		0.1f,											//ニアクリップ(距離の制限)
-		500.f);											//ファークリップ(距離の制限)
+	//	カメラの位置（視点座標）
+	//Vector3 eyepos(0, 0, 5.0f);
+	////	カメラの見ている先（注視点・参照点）
+	//Vector3 refpos(0, 0, 0);
+	////	カメラの上方向ベクトル
+	//static float angle = 0.0f;
+	//angle += 0.1f;
+
+	//Vector3 upvec(0, 1.0f, 0);
+	//upvec.Normalize();	//長さを1に調整する
+	////	ビュー行列の生成
+	//m_view = Matrix::CreateLookAt(eyepos, refpos, upvec);
+
+	////	プロジェクション行列生成
+	////	垂直方向視野角
+	//float fovY = XMConvertToRadians(60.0f);
+	////	アスペクト比（画面比率）
+	//float aspect = (float)m_outputWidth / m_outputHeight;
+	////	ニアクリップ（手前の表示限界距離）
+	//float nearclip = 0.1f;
+	////	ファークリップ（奥の表示限界距離）
+	//float farclip = 1000.0f;
+	////	射影行列の生成
+	//m_proj = Matrix::CreatePerspectiveFieldOfView(fovY, aspect, nearclip, farclip);
+	
+
+	//m_proj = Matrix::CreatePerspectiveFieldOfView(
+	//	XM_PI / 4.f,									//視野角(上下方向)
+	//	float(m_outputWidth) / float(m_outputHeight),	//アスペクト比 
+	//	0.1f,											//ニアクリップ(距離の制限)
+	//	500.f);											//ファークリップ(距離の制限)
 
 	m_effect->SetView(m_view);
 	m_effect->SetProjection(m_proj);

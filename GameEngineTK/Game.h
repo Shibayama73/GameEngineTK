@@ -6,6 +6,7 @@
 
 #include "StepTimer.h"
 #include "DebugCamera.h"
+#include "Camera.h"
 
 #include <PrimitiveBatch.h>		//PrimitiveBatch
 #include <VertexTypes.h>		//VertexPositionColor
@@ -120,5 +121,10 @@ private:
 	DirectX::SimpleMath::Matrix m_worldHead;	//	自機のワールド行列
 
 	float headAngle;	//	旋回
+
+	//	カメラ
+	std::unique_ptr<Camera> m_Camera;
+	DirectX::SimpleMath::Vector3 m_eyePos;
+
 
 };
