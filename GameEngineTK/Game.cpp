@@ -98,9 +98,9 @@ void Game::Initialize(HWND window, int width, int height)
 	headAngle = 0.0f;
 
 	//	カメラの生成
-	m_Camera = std::make_unique<Camera>(m_outputWidth, m_outputHeight);
+	m_Camera = std::make_unique<FollowCamera>(m_outputWidth, m_outputHeight);
 	m_headPos = Vector3(0, 0, 30);
-	m_eyePos = Vector3(0, 0, 33);
+
 	//====================================================================
 
 }
@@ -314,26 +314,17 @@ void Game::Update(DX::StepTimer const& timer)
 
 	}
 
-	//	カメラの設定
-	const float CAMERA_DISTANCE = 5.0f;
-	Vector3 eyepos, refpos;
+	{//	自機に追従するカメラ
+		m_Camera->SetTargetPos(m_headPos);
+		m_Camera->SetTargetAngle(headAngle);
 
-	refpos = m_headPos + Vector3(0, 2.0f, 0);
-	Vector3 cameraY(0, 0, CAMERA_DISTANCE);
+		//	カメラの更新
+		m_Camera->Update();
 
-	Matrix rotmat = Matrix::CreateRotationY(headAngle);
-	cameraY = Vector3::TransformNormal(cameraY, rotmat);
+		m_view = m_Camera->GetViewMatrix();
+		m_proj = m_Camera->GetProjectionMatrix();
 
-	eyepos = refpos + cameraY;
-
-
-	m_Camera->SetRefPos(refpos);
-	//	カメラの更新
-	m_Camera->SetEyePos(eyepos);
-	m_Camera->Update();
-	m_view = m_Camera->GetViewMatrix();
-	m_proj = m_Camera->GetProjectionMatrix();
-
+	}
 
 }
 

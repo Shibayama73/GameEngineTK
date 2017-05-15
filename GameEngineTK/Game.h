@@ -7,6 +7,7 @@
 #include "StepTimer.h"
 #include "DebugCamera.h"
 #include "Camera.h"
+#include "FollowCamera.h"
 
 #include <PrimitiveBatch.h>		//PrimitiveBatch
 #include <VertexTypes.h>		//VertexPositionColor
@@ -123,8 +124,9 @@ private:
 	float headAngle;	//	ù‰ñ
 
 	//	ƒJƒƒ‰
-	std::unique_ptr<Camera> m_Camera;
-	DirectX::SimpleMath::Vector3 m_eyePos;
+	//std::unique_ptr<Camera> m_Camera;
+	std::unique_ptr<FollowCamera> m_Camera;
+	//DirectX::SimpleMath::Vector3 m_eyePos;
 
 
 };

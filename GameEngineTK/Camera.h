@@ -9,21 +9,21 @@
 class Camera
 {
 public:
-	Camera(int Width,int Height);
+	Camera(int width,int height);
 	virtual ~Camera();
 	//	更新
-	void Update();
+	virtual void Update();
 	//	ビュー行列の取得
-	DirectX::SimpleMath::Matrix GetViewMatrix();
+	const DirectX::SimpleMath::Matrix& GetViewMatrix();
 	//	射影行列の取得
-	DirectX::SimpleMath::Matrix GetProjectionMatrix();
+	const DirectX::SimpleMath::Matrix& GetProjectionMatrix();
 	//	視点座標のセット
-	void SetEyePos(DirectX::SimpleMath::Vector3 eyepos);
+	void SetEyePos(const DirectX::SimpleMath::Vector3& eyepos);
 	//	注視点・参照点セット
-	void SetRefPos(DirectX::SimpleMath::Vector3 refpos);
+	void SetRefPos(const DirectX::SimpleMath::Vector3& refpos);
 	//	カメラの向きのセット
-	void SetUpvec(DirectX::SimpleMath::Vector3 upvec);
-	//	視野角のセット
+	void SetUpvec(const DirectX::SimpleMath::Vector3& upvec);
+	//	垂直方向視野角のセット
 	void SetFovY(float fovY);
 	//	アスペクト比のセット
 	void SetAspect(float aspect);
@@ -40,6 +40,8 @@ protected:
 	DirectX::SimpleMath::Vector3 m_refpos;
 	//	カメラの上方向ベクトル
 	DirectX::SimpleMath::Vector3 m_upvec;
+	//	ビュー行列
+	DirectX::SimpleMath::Matrix m_view;
 	//	垂直方向視野角
 	float m_fovY;
 	//	アスペクト比（画面比率）
@@ -48,8 +50,6 @@ protected:
 	float m_nearclip;
 	//	ファークリップ（奥の表示限界距離）
 	float m_farclip;
-	//	ビュー行列
-	DirectX::SimpleMath::Matrix m_view;
 	//	射影行列
 	DirectX::SimpleMath::Matrix m_proj;
 
