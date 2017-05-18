@@ -102,6 +102,9 @@ void Game::Initialize(HWND window, int width, int height)
 	m_headPos = Vector3(0, 0, 30);
 
 	//====================================================================
+	//	キーボード
+	m_Camera->SetKeyboard(m_keyboard.get());
+
 
 }
 
