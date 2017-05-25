@@ -41,6 +41,16 @@ void Game::Initialize(HWND window, int width, int height)
     */
 
 	//	初期化はここから=================================================
+	//	キーボードの生成
+	m_keyboard = std::make_unique<Keyboard>();
+	//	カメラの生成
+	m_Camera = std::make_unique<FollowCamera>(m_outputWidth, m_outputHeight);
+	//	キーボード
+	m_Camera->SetKeyboard(m_keyboard.get());
+
+	//	静的メンバ変数の初期化
+	Obj3d::InitializeStatic(m_d3dDevice, m_d3dContext, m_Camera.get());
+	
 	//m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(m_d3dContext.Get());		//	Get()で生ポインタを渡す
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionNormal>>(m_d3dContext.Get());		//	Get()で生ポインタを渡す
 
@@ -60,27 +70,30 @@ void Game::Initialize(HWND window, int width, int height)
 		m_inputLayout.GetAddressOf());
 
 	//	汎用ステート設定生成
-	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
+//	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
 
 	//	デバッグカメラ生成
 	m_debugCamera = std::make_unique<DebugCamera>(m_outputWidth, m_outputHeight);
 
 	//	エフェクトファクトリ作成
-	m_factory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
+//	m_factory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
 	//	テクスチャファイル指定
-	m_factory->SetDirectory(L"Resources");
-	//	モデル生成
-	m_modelSkydome = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Skydome.cmo", *m_factory);
-	//m_modelGround = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Ground.cmo", *m_factory);
-	m_modelGround = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Ground200.cmo", *m_factory);
-	
-	m_modelSky = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/sky.cmo", *m_factory);
+//	m_factory->SetDirectory(L"Resources");
 
-	//	ティーポットの生成
-	//m_modelTespot = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Teapot.cmo", *m_factory);
-	
-	//	機体
-	m_modelHead = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/head.cmo", *m_factory);
+	////	モデル生成
+	m_modelSkydome.LoadModel(L"Resources/Skydome.cmo");
+	//m_modelSkydome=LoadModule(L"Resources/Skydome.cmo");
+	//m_modelSkydome = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Skydome.cmo", *m_factory);
+	////m_modelGround = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Ground.cmo", *m_factory);
+	//m_modelGround = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Ground200.cmo", *m_factory);
+	//
+	//m_modelSky = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/sky.cmo", *m_factory);
+
+	////	ティーポットの生成
+	////m_modelTespot = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Teapot.cmo", *m_factory);
+	//
+	////	機体
+	//m_modelHead = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/head.cmo", *m_factory);
 
 	//	球内での位置設定
 	for (int i = 0; i < 20; i++)
@@ -93,18 +106,19 @@ void Game::Initialize(HWND window, int width, int height)
 	m_time = 0;
 
 
-	m_keyboard = std::make_unique<Keyboard>();
 
 	headAngle = 0.0f;
 
-	//	カメラの生成
-	m_Camera = std::make_unique<FollowCamera>(m_outputWidth, m_outputHeight);
-	m_headPos = Vector3(0, 0, 30);
+
+//	m_headPos = Vector3(0, 0, 30);
 
 	//====================================================================
-	//	キーボード
-	m_Camera->SetKeyboard(m_keyboard.get());
-
+	
+	m_ObjPlayer.resize(PLAYER_PARTS_NUM);
+	m_ObjPlayer[PLAYER_PARTS_TIRE].LoadModel(L"Resources/tire.cmo");
+	m_ObjPlayer[PLAYER_PARTS_LEG].LoadModel(L"Resources/leg.cmo");
+	m_ObjPlayer[PLAYER_PARTS_HEAD].LoadModel(L"Resources/head.cmo");
+	m_ObjPlayer[PLAYER_PARTS_TOP].LoadModel(L"Resources/top.cmo");
 
 }
 
@@ -136,7 +150,7 @@ void Game::Update(DX::StepTimer const& timer)
 
 	//	空球ワールド行列の計算
 	//	スケーリング
-	Matrix scalemat = Matrix::CreateScale(1.0f);	//倍
+	//Matrix scalemat = Matrix::CreateScale(1.0f);	//倍
 
 
 
@@ -299,23 +313,33 @@ void Game::Update(DX::StepTimer const& timer)
 		//m_headPos += moveV;
 	}
 
-	{//	自機のワールド行列を計算
+	//{//	自機のワールド行列を計算
 
-	 	//	ロール
-	 	Matrix rotmatz = Matrix::CreateRotationZ(XMConvertToRadians(0.0f));
-	 	//	ピッチ（仰角）
-	 	Matrix rotmatx = Matrix::CreateRotationX(XMConvertToRadians(0.0f));
-	 	//	ヨー（方位角）
-	 	Matrix rotmaty = Matrix::CreateRotationY(XMConvertToRadians(0.0f)+headAngle);
+	// 	//	ロール
+	// 	Matrix rotmatz = Matrix::CreateRotationZ(XMConvertToRadians(0.0f));
+	// 	//	ピッチ（仰角）
+	// 	Matrix rotmatx = Matrix::CreateRotationX(XMConvertToRadians(0.0f));
+	// 	//	ヨー（方位角）
+	// 	Matrix rotmaty = Matrix::CreateRotationY(XMConvertToRadians(0.0f)+headAngle);
 
-	 	//	回転行列の合成(zxy)
-	 	Matrix rotmat = rotmatx * rotmatz * rotmaty;
+	// 	//	回転行列の合成(zxy)
+	// 	Matrix rotmat = rotmatx * rotmatz * rotmaty;
 
-		//	平行移動
-		Matrix transmat = Matrix::CreateTranslation(m_headPos);
-		m_worldHead = rotmat * transmat;
+	//	//	平行移動
+	//	Matrix transmat = Matrix::CreateTranslation(m_headPos);
+	//	m_worldHead = rotmat * transmat;
 
-	}
+	//}
+	//{//	自機2のワールド行列を計算
+
+	//	//	ヨー（方位角）
+	//	Matrix rotmat2 = Matrix::CreateRotationZ(XM_PIDIV2)*Matrix::CreateRotationY(0);
+	//	Matrix transmat2 = Matrix::CreateTranslation(Vector3(0, 0.5f, 0));
+	//	
+	//	//	ワールド座標の合成(子供の行列＊親の行列)
+	//	m_worldHead2 = rotmat2 * transmat2 * m_worldHead;
+
+	//}
 
 	{//	自機に追従するカメラ
 		m_Camera->SetTargetPos(m_headPos);
@@ -327,6 +351,16 @@ void Game::Update(DX::StepTimer const& timer)
 		m_view = m_Camera->GetViewMatrix();
 		m_proj = m_Camera->GetProjectionMatrix();
 
+	}
+
+	//	モデルの更新
+	m_modelSkydome.Update();
+
+	for (std::vector<Obj3d>::iterator it = m_ObjPlayer.begin();
+		it != m_ObjPlayer.end();
+		it++)
+	{
+		it->Update();
 	}
 
 }
@@ -358,10 +392,10 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
 	//	描画処理はここから====================================================
-	//	設定
-	m_d3dContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
-	m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);	//	奥行
-	m_d3dContext->RSSetState(m_states->CullClockwise());
+	////	設定
+	//m_d3dContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+	//m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);	//	奥行
+	//m_d3dContext->RSSetState(m_states->CullClockwise());
 
 	//	ビュー行列生成
 	//m_view = Matrix::CreateLookAt(
@@ -409,26 +443,34 @@ void Game::Render()
 	m_effect->Apply(m_d3dContext.Get());
 	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
 
-	//	モデルの描画
-	m_modelSkydome->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
-	//m_modelGround->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
-	m_modelGround->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);
-	/*for (int i = 0; i < 20; i++)
-	{
-		m_modelSky->Draw(m_d3dContext.Get(), *m_states, m_worldSky[i], m_view, m_proj);
-	}*/
+	////	モデルの描画
+	m_modelSkydome.Draw();
 
-
-	//for (int i = 0; i < 20; i++)
+	//m_modelSkydome->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
+	////m_modelGround->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
+	//m_modelGround->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);
+	///*for (int i = 0; i < 20; i++)
 	//{
-	//	//	ティーポットの描画
-	//	m_modelTespot->Draw(m_d3dContext.Get(), *m_states, m_worldTeaPot[i], m_view, m_proj);
-	//}
-
-	//	機体
-	m_modelHead->Draw(m_d3dContext.Get(), *m_states, m_worldHead, m_view, m_proj);
+	//	m_modelSky->Draw(m_d3dContext.Get(), *m_states, m_worldSky[i], m_view, m_proj);
+	//}*/
 
 
+	////for (int i = 0; i < 20; i++)
+	////{
+	////	//	ティーポットの描画
+	////	m_modelTespot->Draw(m_d3dContext.Get(), *m_states, m_worldTeaPot[i], m_view, m_proj);
+	////}
+
+	////	機体
+	//m_modelHead->Draw(m_d3dContext.Get(), *m_states, m_worldHead, m_view, m_proj);
+	//m_modelHead->Draw(m_d3dContext.Get(), *m_states, m_worldHead2, m_view, m_proj);
+
+	for (std::vector<Obj3d>::iterator it = m_ObjPlayer.begin();
+		it != m_ObjPlayer.end();
+		it++)
+	{
+		it->Draw();
+	}
 
 	//	描画
 	m_batch->Begin();
@@ -451,6 +493,8 @@ void Game::Render()
 	//);
 
 	m_batch->End();
+
+	
 
 	//=======================================================================
 
