@@ -114,11 +114,25 @@ void Game::Initialize(HWND window, int width, int height)
 
 	//====================================================================
 	
+	//	自機パーツの読み込み
 	m_ObjPlayer.resize(PLAYER_PARTS_NUM);
 	m_ObjPlayer[PLAYER_PARTS_TIRE].LoadModel(L"Resources/tire.cmo");
 	m_ObjPlayer[PLAYER_PARTS_LEG].LoadModel(L"Resources/leg.cmo");
 	m_ObjPlayer[PLAYER_PARTS_HEAD].LoadModel(L"Resources/head.cmo");
 	m_ObjPlayer[PLAYER_PARTS_TOP].LoadModel(L"Resources/top.cmo");
+
+	//	親子関係の構築(子パーツに親を設定)
+	m_ObjPlayer[PLAYER_PARTS_LEG].SetObjParent(&m_ObjPlayer[PLAYER_PARTS_TIRE]);
+	m_ObjPlayer[PLAYER_PARTS_HEAD].SetObjParent(&m_ObjPlayer[PLAYER_PARTS_LEG]);
+	m_ObjPlayer[PLAYER_PARTS_TOP].SetObjParent(&m_ObjPlayer[PLAYER_PARTS_HEAD]);
+
+	//	子パーツの親からのオフセット(座標のずれ)をセット
+	m_ObjPlayer[PLAYER_PARTS_LEG].SetTranslation(Vector3(0, 0.3f, 0));
+	m_ObjPlayer[PLAYER_PARTS_HEAD].SetTranslation(Vector3(0, 0, -0.1f));
+	m_ObjPlayer[PLAYER_PARTS_TOP].SetTranslation(Vector3(0, 0.2f, 0));
+
+	//	大きさ
+	m_ObjPlayer[PLAYER_PARTS_TIRE].SetScale(Vector3(2, 2, 2));
 
 }
 
@@ -257,6 +271,16 @@ void Game::Update(DX::StepTimer const& timer)
 	//	m_worldSky[i] = scalemat * transmat* rotmat;
 	//}
 
+	{//	パーツギミック
+		//float angle = m_ObjPlayer[PLAYER_PARTS_TOP].GetRotation().z;
+		//m_ObjPlayer[PLAYER_PARTS_TOP].SetRotation(Vector3(0, 0, angle + 0.03f));
+
+		m_cycle += 0.1f;
+		float scale = 1.0f + sinf(m_cycle);
+		m_ObjPlayer[PLAYER_PARTS_LEG].SetScale(Vector3(scale, scale, scale));
+
+	}
+
 	//	キーボードの状態取得
 	Keyboard::State key = m_keyboard->GetState();
 
@@ -266,10 +290,15 @@ void Game::Update(DX::StepTimer const& timer)
 		//	移動ベクトル(Z座標前進)
 		Vector3 moveV(0, 0, -0.1f);
 
+		float angle = m_ObjPlayer[0].GetRotation().y;
+		Matrix rotmat = Matrix::CreateRotationY(angle);
 		//	移動ベクトルを自機の角度分回転させる
-		moveV = Vector3::TransformNormal(moveV, m_worldHead);
+		//moveV = Vector3::TransformNormal(moveV, m_worldHead);
+		moveV = Vector3::TransformNormal(moveV, rotmat);
 		//Matrix rotmaty = Matrix::CreateRotationY(XMConvertToRadians(headAngle));
 		//moveV = Vector3::TransformNormal(moveV, rotmaty);
+		Vector3 pos = m_ObjPlayer[0].GetTranslation();
+		m_ObjPlayer[0].SetTranslation(pos + moveV);
 
 		//	自機の座標を移動
 		m_headPos += moveV;
@@ -282,9 +311,14 @@ void Game::Update(DX::StepTimer const& timer)
 		//	移動ベクトル(Z座標後退)
 		Vector3 moveV(0, 0, 0.1f);
 
+		float angle = m_ObjPlayer[0].GetRotation().y;
+		Matrix rotmat = Matrix::CreateRotationY(angle);
+		moveV = Vector3::TransformNormal(moveV, rotmat);
+		Vector3 pos = m_ObjPlayer[0].GetTranslation();
+		m_ObjPlayer[0].SetTranslation(pos + moveV);
 
 		//	移動ベクトルを自機の角度分回転させる
-		moveV = Vector3::TransformNormal(moveV, m_worldHead);
+	//	moveV = Vector3::TransformNormal(moveV, m_worldHead);
 		//Matrix rotmaty = Matrix::CreateRotationY(XMConvertToRadians(headAngle));
 		//moveV = Vector3::TransformNormal(moveV, rotmaty);
 
@@ -296,7 +330,10 @@ void Game::Update(DX::StepTimer const& timer)
 	//	Aキーが押されてるとき左旋回
 	if (key.A)
 	{
-		headAngle += 0.1f;
+		//headAngle += 0.1f;
+		float angle = m_ObjPlayer[0].GetRotation().y;
+		m_ObjPlayer[0].SetRotation(Vector3(0, angle + 0.03f, 0));
+
 		////	移動ベクトル左(X座標後退)
 		//Vector3 moveV(-0.1f, 0, 0);
 		////	自機の座標を移動
@@ -305,7 +342,9 @@ void Game::Update(DX::StepTimer const& timer)
 	//	Dキーが押されてるとき右旋回
 	if (key.D)
 	{
-		headAngle -= 0.1f;
+		//headAngle -= 0.1f;
+		float angle = m_ObjPlayer[0].GetRotation().y;
+		m_ObjPlayer[0].SetRotation(Vector3(0, angle - 0.03f, 0));
 
 		////	移動ベクトル左(X座標前進)
 		//Vector3 moveV(0.1f, 0, 0);
@@ -342,8 +381,10 @@ void Game::Update(DX::StepTimer const& timer)
 	//}
 
 	{//	自機に追従するカメラ
-		m_Camera->SetTargetPos(m_headPos);
-		m_Camera->SetTargetAngle(headAngle);
+		//m_Camera->SetTargetPos(m_headPos);
+		//m_Camera->SetTargetAngle(headAngle);
+		m_Camera->SetTargetPos(m_ObjPlayer[0].GetTranslation());	//自機の座標を追尾
+		m_Camera->SetTargetAngle(m_ObjPlayer[0].GetRotation().y);	//自機のy座標回転角を追尾
 
 		//	カメラの更新
 		m_Camera->Update();

@@ -30,10 +30,10 @@ public:
 	//	プレイヤーパーツ
 	enum PLAYER_PARTS
 	{
-		PLAYER_PARTS_TIRE,
-		PLAYER_PARTS_LEG,
-		PLAYER_PARTS_HEAD,
-		PLAYER_PARTS_TOP,
+		PLAYER_PARTS_TIRE,	//土台
+		PLAYER_PARTS_LEG,	//脚
+		PLAYER_PARTS_HEAD,	//頭体
+		PLAYER_PARTS_TOP,	//頭先
 
 		PLAYER_PARTS_NUM	//合計
 	};
@@ -144,6 +144,9 @@ private:
 	//Obj3d m_ObjPlayer2;
 
 	std::vector<Obj3d> m_ObjPlayer;
+
+	//	サイン用の角度
+	float m_cycle;
 
 	//	カメラ
 	//std::unique_ptr<Camera> m_Camera;

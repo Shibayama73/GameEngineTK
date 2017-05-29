@@ -57,7 +57,7 @@ public:
 	void SetTranslation(const DirectX::SimpleMath::Vector3& translation) { m_translation = translation; }
 	//	ワールド行列
 	//	親の3Dオブジェクト
-	void SetScale(Obj3d* objParentle) { m_ObjParent = objParentle; }
+	void SetObjParent(Obj3d* objParentle) { m_ObjParent = objParentle; }
 
 	//getter
 	//	スケーリング(XYZ)
