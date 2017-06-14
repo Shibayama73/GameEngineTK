@@ -5,14 +5,11 @@
 #include "pch.h"
 #include "Game.h"
 
-
 extern void ExitGame();
 
 using namespace DirectX;
-
-using Microsoft::WRL::ComPtr;
-
 using namespace DirectX::SimpleMath;
+using Microsoft::WRL::ComPtr;
 
 Game::Game() :
     m_window(0),
@@ -43,6 +40,8 @@ void Game::Initialize(HWND window, int width, int height)
 	//	初期化はここから=================================================
 	//	キーボードの生成
 	m_keyboard = std::make_unique<Keyboard>();
+	//	トリガーの生成
+	m_tracker = std::make_unique<Keyboard::KeyboardStateTracker>();
 	//	カメラの生成
 	m_Camera = std::make_unique<FollowCamera>(m_outputWidth, m_outputHeight);
 	//	キーボード
@@ -80,7 +79,7 @@ void Game::Initialize(HWND window, int width, int height)
 	//	テクスチャファイル指定
 //	m_factory->SetDirectory(L"Resources");
 
-	////	モデル生成
+	//	モデル生成
 	m_modelSkydome.LoadModel(L"Resources/Skydome.cmo");
 	//m_modelSkydome=LoadModule(L"Resources/Skydome.cmo");
 	//m_modelSkydome = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Skydome.cmo", *m_factory);
@@ -96,43 +95,76 @@ void Game::Initialize(HWND window, int width, int height)
 	//m_modelHead = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/head.cmo", *m_factory);
 
 	//	球内での位置設定
-	for (int i = 0; i < 20; i++)
+	/*for (int i = 0; i < 20; i++)
 	{
 		m_rad[i] = rand() / XM_2PI;
 		m_distance[i] = rand() % 100;
 	}
 
 	m_scale = rand() / XM_2PI;
-	m_time = 0;
+	m_time = 0;*/
 
 
-
+	//	旋回
 	headAngle = 0.0f;
 
+	//	プレイヤー生成
+	m_player = new Player();
+	m_player->Initialize(m_keyboard.get(),m_tracker.get());
+
+	//	敵の生成
+	for (int i = 0; i < ENEMY_NUM; i++)
+	{
+		m_enemy[i] = new Enemy();
+		m_enemy[i]->Initialize();
+	}
+
+	//	追従カメラにプレイヤーをセット
+//	m_Camera->SetPlayer(m_player);
 
 //	m_headPos = Vector3(0, 0, 30);
 
+	//	敵の生成
+//	int enemyNum = rand() % 10 + 1;
+//	m_enemys.resize(enemyNum);
+//	for (int i = 0; i < enemyNum; i++) {
+//		m_enemys[i] = std::make_unique<Enemy>(m_keyboard.get());
+//		m_enemys[i]->Initialize();
+//	}
+
 	//====================================================================
 	
-	//	自機パーツの読み込み
-	m_ObjPlayer.resize(PLAYER_PARTS_NUM);
-	m_ObjPlayer[PLAYER_PARTS_TIRE].LoadModel(L"Resources/tire.cmo");
-	m_ObjPlayer[PLAYER_PARTS_LEG].LoadModel(L"Resources/leg.cmo");
-	m_ObjPlayer[PLAYER_PARTS_HEAD].LoadModel(L"Resources/head.cmo");
-	m_ObjPlayer[PLAYER_PARTS_TOP].LoadModel(L"Resources/top.cmo");
+	////	自機パーツの読み込み
+	//m_ObjPlayer.resize(PLAYER_PARTS_NUM);
+	//m_ObjPlayer[PLAYER_PARTS_TIRE].LoadModel(L"Resources/tire.cmo");
+	//m_ObjPlayer[PLAYER_PARTS_HEAD].LoadModel(L"Resources/head.cmo");
+	//m_ObjPlayer[PLAYER_PARTS_ARM_RIGHT].LoadModel(L"Resources/arm_right.cmo");
+	//m_ObjPlayer[PLAYER_PARTS_ARM_LEFT].LoadModel(L"Resources/arm_right.cmo");
+	//m_ObjPlayer[PLAYER_PARTS_TOP].LoadModel(L"Resources/top.cmo");
 
-	//	親子関係の構築(子パーツに親を設定)
-	m_ObjPlayer[PLAYER_PARTS_LEG].SetObjParent(&m_ObjPlayer[PLAYER_PARTS_TIRE]);
-	m_ObjPlayer[PLAYER_PARTS_HEAD].SetObjParent(&m_ObjPlayer[PLAYER_PARTS_LEG]);
-	m_ObjPlayer[PLAYER_PARTS_TOP].SetObjParent(&m_ObjPlayer[PLAYER_PARTS_HEAD]);
+	////	親子関係の構築(子パーツに親を設定)
+	//m_ObjPlayer[PLAYER_PARTS_HEAD].SetObjParent(&m_ObjPlayer[PLAYER_PARTS_TIRE]);
+	//m_ObjPlayer[PLAYER_PARTS_ARM_RIGHT].SetObjParent(&m_ObjPlayer[PLAYER_PARTS_HEAD]);
+	//m_ObjPlayer[PLAYER_PARTS_ARM_LEFT].SetObjParent(&m_ObjPlayer[PLAYER_PARTS_HEAD]);
+	//m_ObjPlayer[PLAYER_PARTS_TOP].SetObjParent(&m_ObjPlayer[PLAYER_PARTS_HEAD]);
 
-	//	子パーツの親からのオフセット(座標のずれ)をセット
-	m_ObjPlayer[PLAYER_PARTS_LEG].SetTranslation(Vector3(0, 0.3f, 0));
-	m_ObjPlayer[PLAYER_PARTS_HEAD].SetTranslation(Vector3(0, 0, -0.1f));
-	m_ObjPlayer[PLAYER_PARTS_TOP].SetTranslation(Vector3(0, 0.2f, 0));
+	////	子パーツの親からのオフセット(座標のずれ)をセット
+	//m_ObjPlayer[PLAYER_PARTS_HEAD].SetTranslation(Vector3(0, 0.1f, 0));
+	//m_ObjPlayer[PLAYER_PARTS_ARM_RIGHT].SetTranslation(Vector3(0.25f, 0.2f, 0));
+	//m_ObjPlayer[PLAYER_PARTS_ARM_LEFT].SetTranslation(Vector3(-0.25f, 0.2f, 0));
+	//m_ObjPlayer[PLAYER_PARTS_TOP].SetTranslation(Vector3(0, 0.2f, 0.3f));
 
-	//	大きさ
-	m_ObjPlayer[PLAYER_PARTS_TIRE].SetScale(Vector3(2, 2, 2));
+	////	大きさ
+	//m_ObjPlayer[PLAYER_PARTS_TIRE].SetScale(Vector3(2, 2, 2));
+
+	////	翼の向き
+	//m_ObjPlayer[PLAYER_PARTS_ARM_RIGHT].SetRotation(Vector3(0, -30.0f, 0));
+	//m_ObjPlayer[PLAYER_PARTS_ARM_LEFT].SetRotation(Vector3(0, 30.0f, 0));
+
+	//======================================================================
+
+	//	状態オフ
+	//m_plsyerState = false;
 
 }
 
@@ -166,8 +198,20 @@ void Game::Update(DX::StepTimer const& timer)
 	//	スケーリング
 	//Matrix scalemat = Matrix::CreateScale(1.0f);	//倍
 
+	//	プレイヤーの更新
+	m_player->Update();
 
-
+	//	敵の更新
+	for (int i = 0; i < ENEMY_NUM; i++)
+	{
+		m_enemy[i]->Update();
+	}
+	/*for (std::vector<std::unique_ptr<Enemy>>::iterator it = m_enemys.begin();
+		it != m_enemys.end();it++)
+	{
+		Enemy* enemy = it->get();
+		enemy->Update();
+	}*/
 
 	//m_time++;
 
@@ -214,11 +258,6 @@ void Game::Update(DX::StepTimer const& timer)
 	////float scal = val * val2 * val3;
 
 	//Matrix scalemat = Matrix::CreateScale(m_val);
-
-
-
-
-
 
 
 	//2====================================================================================
@@ -275,82 +314,117 @@ void Game::Update(DX::StepTimer const& timer)
 		//float angle = m_ObjPlayer[PLAYER_PARTS_TOP].GetRotation().z;
 		//m_ObjPlayer[PLAYER_PARTS_TOP].SetRotation(Vector3(0, 0, angle + 0.03f));
 
-		m_cycle += 0.1f;
+	/*	m_cycle += 0.1f;
 		float scale = 1.0f + sinf(m_cycle);
-		m_ObjPlayer[PLAYER_PARTS_LEG].SetScale(Vector3(scale, scale, scale));
+		m_ObjPlayer[PLAYER_PARTS_HEAD].SetScale(Vector3(scale, scale, scale));*/
 
 	}
 
-	//	キーボードの状態取得
-	Keyboard::State key = m_keyboard->GetState();
+	////	キーボードの状態取得
+	//Keyboard::State key = m_keyboard->GetState();
+	//m_tracker->Update(key);
 
-	//	Wキーが押されてるとき前進
-	if (key.W)
-	{
-		//	移動ベクトル(Z座標前進)
-		Vector3 moveV(0, 0, -0.1f);
+	////	Xキーが押されたとき
+	//if (m_tracker->pressed.X)
+	//{
+	//	//	自機の状態がオフのとき
+	//	if (m_plsyerState == false)
+	//	{
+	//		//	変形する
+	//		m_ObjPlayer[PLAYER_PARTS_HEAD].SetTranslation(Vector3(0, 0.6f, 0));
+	//		m_ObjPlayer[PLAYER_PARTS_HEAD].SetRotation(Vector3(1.5f, 0, 0));
+	//		m_ObjPlayer[PLAYER_PARTS_ARM_RIGHT].SetRotation(Vector3(0, 1.5f, -1.8f));
+	//		m_ObjPlayer[PLAYER_PARTS_ARM_LEFT].SetRotation(Vector3(0, -1.5f, 1.8f));
+	//		m_ObjPlayer[PLAYER_PARTS_TOP].SetTranslation(Vector3(0, 0, -0.1f));
+	//		m_ObjPlayer[PLAYER_PARTS_TOP].SetRotation(Vector3(5.0f, 0, 0));
 
-		float angle = m_ObjPlayer[0].GetRotation().y;
-		Matrix rotmat = Matrix::CreateRotationY(angle);
-		//	移動ベクトルを自機の角度分回転させる
-		//moveV = Vector3::TransformNormal(moveV, m_worldHead);
-		moveV = Vector3::TransformNormal(moveV, rotmat);
-		//Matrix rotmaty = Matrix::CreateRotationY(XMConvertToRadians(headAngle));
-		//moveV = Vector3::TransformNormal(moveV, rotmaty);
-		Vector3 pos = m_ObjPlayer[0].GetTranslation();
-		m_ObjPlayer[0].SetTranslation(pos + moveV);
+	//		m_plsyerState = true;
+	//	}
+	//	else
+	//	{
+	//		//	子パーツの親からのオフセット(座標のずれ)をセット
+	//		m_ObjPlayer[PLAYER_PARTS_HEAD].SetTranslation(Vector3(0, 0.1f, 0));
+	//		m_ObjPlayer[PLAYER_PARTS_ARM_RIGHT].SetTranslation(Vector3(0.25f, 0.2f, 0));
+	//		m_ObjPlayer[PLAYER_PARTS_ARM_LEFT].SetTranslation(Vector3(-0.25f, 0.2f, 0));
+	//		m_ObjPlayer[PLAYER_PARTS_TOP].SetTranslation(Vector3(0, 0.2f, 0.3f));
 
-		//	自機の座標を移動
-		m_headPos += moveV;
+	//		//	翼の向き
+	//		m_ObjPlayer[PLAYER_PARTS_ARM_RIGHT].SetRotation(Vector3(0, -30.0f, 0));
+	//		m_ObjPlayer[PLAYER_PARTS_ARM_LEFT].SetRotation(Vector3(0, 30.0f, 0));
+
+	//		m_plsyerState = false;
+
+	//	}
+	//	
+	//}
+
+	////	Wキーが押されてるとき前進
+	//if (key.W)
+	//{
+	//	//	移動ベクトル(Z座標前進)
+	//	Vector3 moveV(0, 0, -0.1f);
+
+	//	float angle = m_ObjPlayer[0].GetRotation().y;
+	//	Matrix rotmat = Matrix::CreateRotationY(angle);
+	//	//	移動ベクトルを自機の角度分回転させる
+	//	//moveV = Vector3::TransformNormal(moveV, m_worldHead);
+	//	moveV = Vector3::TransformNormal(moveV, rotmat);
+	//	//Matrix rotmaty = Matrix::CreateRotationY(XMConvertToRadians(headAngle));
+	//	//moveV = Vector3::TransformNormal(moveV, rotmaty);
+	//	Vector3 pos = m_ObjPlayer[0].GetTranslation();
+	//	m_ObjPlayer[0].SetTranslation(pos + moveV);
+
+	//	//	自機の座標を移動
+	//	m_headPos += moveV;
 
 
-	}
-	//	Sキーが押されてるとき後退
-	if (key.S)
-	{
-		//	移動ベクトル(Z座標後退)
-		Vector3 moveV(0, 0, 0.1f);
+	//}
+	////	Sキーが押されてるとき後退
+	//if (key.S)
+	//{
+	//	//	移動ベクトル(Z座標後退)
+	//	Vector3 moveV(0, 0, 0.1f);
 
-		float angle = m_ObjPlayer[0].GetRotation().y;
-		Matrix rotmat = Matrix::CreateRotationY(angle);
-		moveV = Vector3::TransformNormal(moveV, rotmat);
-		Vector3 pos = m_ObjPlayer[0].GetTranslation();
-		m_ObjPlayer[0].SetTranslation(pos + moveV);
+	//	float angle = m_ObjPlayer[0].GetRotation().y;
+	//	Matrix rotmat = Matrix::CreateRotationY(angle);
+	//	moveV = Vector3::TransformNormal(moveV, rotmat);
+	//	Vector3 pos = m_ObjPlayer[0].GetTranslation();
+	//	m_ObjPlayer[0].SetTranslation(pos + moveV);
 
-		//	移動ベクトルを自機の角度分回転させる
-	//	moveV = Vector3::TransformNormal(moveV, m_worldHead);
-		//Matrix rotmaty = Matrix::CreateRotationY(XMConvertToRadians(headAngle));
-		//moveV = Vector3::TransformNormal(moveV, rotmaty);
+	//	//	移動ベクトルを自機の角度分回転させる
+	////	moveV = Vector3::TransformNormal(moveV, m_worldHead);
+	//	//Matrix rotmaty = Matrix::CreateRotationY(XMConvertToRadians(headAngle));
+	//	//moveV = Vector3::TransformNormal(moveV, rotmaty);
 
-		//	自機の座標を移動
-		m_headPos += moveV;
+	//	//	自機の座標を移動
+	//	m_headPos += moveV;
 
 
-	}
-	//	Aキーが押されてるとき左旋回
-	if (key.A)
-	{
-		//headAngle += 0.1f;
-		float angle = m_ObjPlayer[0].GetRotation().y;
-		m_ObjPlayer[0].SetRotation(Vector3(0, angle + 0.03f, 0));
+	//}
+	////	Aキーが押されてるとき左旋回
+	//if (key.A)
+	//{
+	//	//headAngle += 0.1f;
+	//	float angle = m_ObjPlayer[0].GetRotation().y;
+	//	m_ObjPlayer[0].SetRotation(Vector3(0, angle + 0.03f, 0));
 
-		////	移動ベクトル左(X座標後退)
-		//Vector3 moveV(-0.1f, 0, 0);
-		////	自機の座標を移動
-		//m_headPos += moveV;
-	}
-	//	Dキーが押されてるとき右旋回
-	if (key.D)
-	{
-		//headAngle -= 0.1f;
-		float angle = m_ObjPlayer[0].GetRotation().y;
-		m_ObjPlayer[0].SetRotation(Vector3(0, angle - 0.03f, 0));
+	//	////	移動ベクトル左(X座標後退)
+	//	//Vector3 moveV(-0.1f, 0, 0);
+	//	////	自機の座標を移動
+	//	//m_headPos += moveV;
+	//}
+	////	Dキーが押されてるとき右旋回
+	//if (key.D)
+	//{
+	//	//headAngle -= 0.1f;
+	//	float angle = m_ObjPlayer[0].GetRotation().y;
+	//	m_ObjPlayer[0].SetRotation(Vector3(0, angle - 0.03f, 0));
 
-		////	移動ベクトル左(X座標前進)
-		//Vector3 moveV(0.1f, 0, 0);
-		////	自機の座標を移動
-		//m_headPos += moveV;
-	}
+	//	////	移動ベクトル左(X座標前進)
+	//	//Vector3 moveV(0.1f, 0, 0);
+	//	////	自機の座標を移動
+	//	//m_headPos += moveV;
+	//}
 
 	//{//	自機のワールド行列を計算
 
@@ -383,8 +457,8 @@ void Game::Update(DX::StepTimer const& timer)
 	{//	自機に追従するカメラ
 		//m_Camera->SetTargetPos(m_headPos);
 		//m_Camera->SetTargetAngle(headAngle);
-		m_Camera->SetTargetPos(m_ObjPlayer[0].GetTranslation());	//自機の座標を追尾
-		m_Camera->SetTargetAngle(m_ObjPlayer[0].GetRotation().y);	//自機のy座標回転角を追尾
+		m_Camera->SetTargetPos(m_player->GetTranslation());	//自機の座標を追尾
+		m_Camera->SetTargetAngle(m_player->GetRotation().y);	//自機のy座標回転角を追尾
 
 		//	カメラの更新
 		m_Camera->Update();
@@ -397,12 +471,12 @@ void Game::Update(DX::StepTimer const& timer)
 	//	モデルの更新
 	m_modelSkydome.Update();
 
-	for (std::vector<Obj3d>::iterator it = m_ObjPlayer.begin();
+	/*for (std::vector<Obj3d>::iterator it = m_ObjPlayer.begin();
 		it != m_ObjPlayer.end();
 		it++)
 	{
 		it->Update();
-	}
+	}*/
 
 }
 
@@ -478,15 +552,31 @@ void Game::Render()
 	//	0.1f,											//ニアクリップ(距離の制限)
 	//	500.f);											//ファークリップ(距離の制限)
 
+
+	//	エフェクトの描画
 	m_effect->SetView(m_view);
 	m_effect->SetProjection(m_proj);
 
 	m_effect->Apply(m_d3dContext.Get());
 	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
 
-	////	モデルの描画
+	//	天球モデルの描画
 	m_modelSkydome.Draw();
+	//	プレイヤーの描画
+	m_player->Draw();
 
+	//	敵の描画
+	for (int i = 0; i < ENEMY_NUM; i++)
+	{
+		m_enemy[i]->Draw();
+	}
+	/*for (std::vector<std::unique_ptr<Enemy>>::iterator it = m_enemys.begin();
+		it != m_enemys.end(); it++)
+	{
+		Enemy* enemy = it->get();
+		enemy->Draw();
+	}
+*/
 	//m_modelSkydome->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
 	////m_modelGround->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
 	//m_modelGround->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);
@@ -506,12 +596,12 @@ void Game::Render()
 	//m_modelHead->Draw(m_d3dContext.Get(), *m_states, m_worldHead, m_view, m_proj);
 	//m_modelHead->Draw(m_d3dContext.Get(), *m_states, m_worldHead2, m_view, m_proj);
 
-	for (std::vector<Obj3d>::iterator it = m_ObjPlayer.begin();
+	/*for (std::vector<Obj3d>::iterator it = m_ObjPlayer.begin();
 		it != m_ObjPlayer.end();
 		it++)
 	{
 		it->Draw();
-	}
+	}*/
 
 	//	描画
 	m_batch->Begin();

@@ -38,6 +38,9 @@ Obj3d::Obj3d()
 	m_scale = Vector3(1, 1, 1);
 	m_ObjParent = nullptr;
 
+	//	デフォルトではオイラー角を使用
+	m_UseQuaternion = false;
+
 }
 
 void Obj3d::LoadModel(const wchar_t * fileName)
@@ -75,14 +78,24 @@ void Obj3d::Update()
 	//	m_worldHead = rotmat * transmat;
 
 	//}
-	{//	自機2のワールド行列を計算
+	{//	ワールド行列を計算
 
 	 //	ワールド行列の計算
 		Matrix scalemat = Matrix::CreateScale(m_scale);
-		Matrix rotmatZ = Matrix::CreateRotationZ(m_rotation.z);
-		Matrix rotmatX = Matrix::CreateRotationX(m_rotation.x);
-		Matrix rotmatY = Matrix::CreateRotationY(m_rotation.y);
-		Matrix rotmat = rotmatZ * rotmatX * rotmatY;
+		Matrix rotmat;
+		if (m_UseQuaternion)
+		{
+			//	クォータニオンで回転を計算
+			rotmat = Matrix::CreateFromQuaternion(m_rotationQ);
+		}
+		else
+		{
+			//	オイラー角で回転を計算
+			Matrix rotmatZ = Matrix::CreateRotationZ(m_rotation.z);
+			Matrix rotmatX = Matrix::CreateRotationX(m_rotation.x);
+			Matrix rotmatY = Matrix::CreateRotationY(m_rotation.y);
+			rotmat = rotmatZ * rotmatX * rotmatY;
+		}
 		Matrix transmat = Matrix::CreateTranslation(m_translation);
 
 		//	ワールド座標の合成

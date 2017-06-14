@@ -19,24 +19,25 @@
 #include <Model.h>
 
 #include "Obj3d.h"
-
+#include "Player.h"
+#include "Enemy.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
 class Game
 {
 public:
+	////	プレイヤーパーツ
+	//enum PLAYER_PARTS
+	//{
+	//	PLAYER_PARTS_TIRE,		//土台
+	//	PLAYER_PARTS_HEAD,		//頭体
+	//	PLAYER_PARTS_ARM_RIGHT,	//右腕
+	//	PLAYER_PARTS_ARM_LEFT,	//左腕
+	//	PLAYER_PARTS_TOP,		//頭先
 
-	//	プレイヤーパーツ
-	enum PLAYER_PARTS
-	{
-		PLAYER_PARTS_TIRE,	//土台
-		PLAYER_PARTS_LEG,	//脚
-		PLAYER_PARTS_HEAD,	//頭体
-		PLAYER_PARTS_TOP,	//頭先
-
-		PLAYER_PARTS_NUM	//合計
-	};
+	//	PLAYER_PARTS_NUM		//合計
+	//};
 
     Game();
 
@@ -57,7 +58,6 @@ public:
     void GetDefaultSize( int& width, int& height ) const;
 
 private:
-
     void Update(DX::StepTimer const& timer);
     void Render();
 
@@ -131,9 +131,10 @@ private:
 	float m_val;
 
 	std::unique_ptr<DirectX::Keyboard> m_keyboard;	//	キーボード
+	std::unique_ptr<DirectX::Keyboard::KeyboardStateTracker> m_tracker;	//トリガー
 
-	DirectX::SimpleMath::Vector3 m_headPos;		//	自機の移動座標
-	DirectX::SimpleMath::Matrix m_worldHead;	//	自機のワールド行列
+	//DirectX::SimpleMath::Vector3 m_headPos;		//	自機の移動座標
+	//DirectX::SimpleMath::Matrix m_worldHead;	//	自機のワールド行列
 	//DirectX::SimpleMath::Matrix m_worldHead2;	//	自機のワールド行列2
 
 	float headAngle;	//	旋回
@@ -143,15 +144,25 @@ private:
 	////	自機パーツ２(親パーツ)
 	//Obj3d m_ObjPlayer2;
 
-	std::vector<Obj3d> m_ObjPlayer;
+//	std::vector<Obj3d> m_ObjPlayer;
 
 	//	サイン用の角度
-	float m_cycle;
+	//float m_cycle;
 
 	//	カメラ
 	//std::unique_ptr<Camera> m_Camera;
 	std::unique_ptr<FollowCamera> m_Camera;
 	//DirectX::SimpleMath::Vector3 m_eyePos;
 
+	//	自機の状態
+//	bool m_plsyerState;
+
+	//	プレイヤー
+	Player* m_player;
+
+	static const int ENEMY_NUM = 3;
+	//	敵
+	Enemy* m_enemy[ENEMY_NUM];
+	//std::vector<std::unique_ptr<Enemy>> m_enemys;
 
 };

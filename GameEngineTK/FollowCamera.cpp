@@ -19,6 +19,8 @@ FollowCamera::FollowCamera(int width, int height)
 	m_keyboard = nullptr;
 	//	FPSフラグ
 	m_isFPS = false;
+	//	プレイヤー
+//	m_player = nullptr;
 
 }
 
@@ -34,8 +36,13 @@ void FollowCamera::Update()
 	if (m_keyboardTracker.IsKeyPressed(Keyboard::Keyboard::C)) {
 		//	カメラのフラグ切り替え
 		m_isFPS = !m_isFPS;
-
 	}
+
+//	if (m_player)
+//	{
+//		this->SetTargetPos(m_player->GetTranslation());		//自機の座標を追尾
+//		this->SetTargetAngle(m_player->GetRotation().y);	//自機のy座標回転角を追尾
+//	}
 
 	//	カメラの設定（自機に追従するカメラ）
 	//	視点・参照点の座標
@@ -117,4 +124,10 @@ void FollowCamera::SetKeyboard(DirectX::Keyboard * keyboard)
 {
 	m_keyboard = keyboard;
 }
+//
+////	プレイヤーをセット
+//void FollowCamera::SetPlayer(Player * player)
+//{
+//	m_player = player;
+//}
 

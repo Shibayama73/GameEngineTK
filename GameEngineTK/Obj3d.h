@@ -51,8 +51,10 @@ public:
 	//setter
 	//	スケーリング(XYZ)
 	void SetScale(const DirectX::SimpleMath::Vector3& scale) { m_scale = scale; }
-	//	回転角(XYZ)
-	void SetRotation(const DirectX::SimpleMath::Vector3& rotation) { m_rotation = rotation; }
+	//	回転角(XYZ)→フラグをオフ
+	void SetRotation(const DirectX::SimpleMath::Vector3& rotation) { m_rotation = rotation; m_UseQuaternion = false; }
+	//	回転角(クォータニオン)→フラグをオン
+	void SetRotationQ(const DirectX::SimpleMath::Quaternion& rotationQ) { m_rotationQ = rotationQ; m_UseQuaternion = true; }
 	//	平行移動(XYZ)
 	void SetTranslation(const DirectX::SimpleMath::Vector3& translation) { m_translation = translation; }
 	//	ワールド行列
@@ -81,6 +83,8 @@ private:
 	DirectX::SimpleMath::Vector3 m_scale;
 	//	回転角(XYZ)
 	DirectX::SimpleMath::Vector3 m_rotation;
+	//	回転角(クォータニオン)
+	DirectX::SimpleMath::Quaternion m_rotationQ;
 	//	平行移動(XYZ)
 	//DirectX::SimpleMath::Vector3 m_headPos;		//	自機の移動座標
 	DirectX::SimpleMath::Vector3 m_translation;		//	自機の移動座標
@@ -89,5 +93,7 @@ private:
 	//DirectX::SimpleMath::Matrix m_worldHead2;	//	自機のワールド行列2
 	//	親のObj3dへのポインタ
 	Obj3d* m_ObjParent;
+	//	回転をクォータニオンで扱うフラグ
+	bool m_UseQuaternion;
 
 };
