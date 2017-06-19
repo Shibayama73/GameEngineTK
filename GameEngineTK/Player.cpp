@@ -48,6 +48,15 @@ void Player::Initialize(DirectX::Keyboard* keyboard, DirectX::Keyboard::Keyboard
 	//	弾丸発射カウント
 	m_bulletCount = 0;
 
+	{//	弾丸用当たり判定ノードの設定
+		m_CollisionNodeBullet.Initialize();
+
+		//	親パーツを設定
+		m_CollisionNodeBullet.SetParent(&m_ObjPlayer[PLAYER_PARTS_TOP]);
+		m_CollisionNodeBullet.SetTrans(Vector3(0,0.3f,0));
+		m_CollisionNodeBullet.SetLocalRadius(0.3f);
+	}
+
 }
 
 void Player::Update()
@@ -209,6 +218,9 @@ void Player::Update()
 	//	デバッグ用
 	//FireBullet();
 
+	//	弾丸用当たり判定ノード
+	m_CollisionNodeBullet.Update();
+
 }
 
 void Player::Draw()
@@ -220,6 +232,9 @@ void Player::Draw()
 	{
 		it->Draw();
 	}
+	//	弾丸用当たり判定ノード
+	m_CollisionNodeBullet.Draw();
+
 }
 
 void Player::FireBullet()

@@ -5,6 +5,7 @@
 
 #include <SimpleMath.h>			//Vecter3
 #include "Obj3d.h"
+#include "CollisionNode.h"
 
 class Player
 {
@@ -37,6 +38,9 @@ public:
 	//	回転角(XYZ)
 	const DirectX::SimpleMath::Vector3& GetRotation() { return m_ObjPlayer[0].GetRotation(); }
 
+	//	弾丸用の当たり判定取得
+	const SphereNode& GetCollisionNodeBullet() { return m_CollisionNodeBullet; }
+
 private:
 	DirectX::Keyboard* m_keyboard;						//キーボード
 	DirectX::Keyboard::KeyboardStateTracker* m_tracker;	//トリガー
@@ -57,5 +61,7 @@ private:
 	bool m_bulletFlag;
 	//	弾丸発射カウント
 	int m_bulletCount;
+	//	弾丸用の当たり判定
+	SphereNode m_CollisionNodeBullet;
 
 };
