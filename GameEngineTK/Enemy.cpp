@@ -48,6 +48,17 @@ void Enemy::Initialize()
 	m_timer = 0;
 	m_distAngle = 0;
 
+	{//	敵本体の当たり判定ノードの設定
+		m_CollisionNodeBody.Initialize();
+
+		//	親パーツのを設定
+		m_CollisionNodeBody.SetParent(&m_ObjEnemy[ENEMY_PARTS_HEAD]);
+		m_CollisionNodeBody.SetTrans(Vector3(0, 0.1f, 0));
+		m_CollisionNodeBody.SetLocalRadius(0.5f);
+
+	}
+
+
 }
 
 void Enemy::Update()
@@ -177,6 +188,9 @@ void Enemy::Update()
 		it->Update();
 	}
 
+	//	敵本体用の当たり判定ノード
+	m_CollisionNodeBody.Update();
+
 }
 
 void Enemy::Draw()
@@ -188,4 +202,7 @@ void Enemy::Draw()
 	{
 		it->Draw();
 	}
+
+	//	敵本体用当たり判定ノード
+	m_CollisionNodeBody.Draw();
 }

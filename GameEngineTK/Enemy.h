@@ -5,6 +5,7 @@
 
 #include <SimpleMath.h>			//Vecter3
 #include "Obj3d.h"
+#include "CollisionNode.h"
 
 class Enemy
 {
@@ -38,6 +39,9 @@ public:
 	//	‰ñ“]Šp(XYZ)
 	const DirectX::SimpleMath::Vector3& GetRotation() { return m_ObjEnemy[0].GetRotation(); }
 
+	//	“G–{‘Ì‚Ì“–‚½‚è”»’èæ“¾
+	const SphereNode& GetCollisionNodeBody() { return m_CollisionNodeBody; }
+
 private:
 	//	©‹@‚ÌˆÚ“®À•W
 	DirectX::SimpleMath::Vector3 m_headPos;
@@ -54,6 +58,8 @@ private:
 	int m_timer;
 	//	–Ú•WŠp“x
 	float m_distAngle;
+	//	“G–{‘Ì‚Ì“–‚½‚è”»’è
+	SphereNode m_CollisionNodeBody;
 
 };
 
