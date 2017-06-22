@@ -30,8 +30,9 @@ public:
 	void Draw();
 
 
-	void SetTranslation(DirectX::SimpleMath::Vector3 trans) { m_headPos = trans; }
-	void SetRotation(DirectX::SimpleMath::Vector3 angle) { m_headPos = angle; }
+	void SetTranslation(DirectX::SimpleMath::Vector3 trans) { m_ObjEnemy[0].SetTranslation(trans); }
+	void SetRotation(DirectX::SimpleMath::Vector3 angle) { m_ObjEnemy[0].SetRotation(angle); }
+	//void SetRotation(DirectX::SimpleMath::Vector3 angle) { m_headPos = angle; }
 
 
 	//	平行移動(XYZ)
@@ -42,6 +43,11 @@ public:
 	//	敵本体の当たり判定取得
 	const SphereNode& GetCollisionNodeBody() { return m_CollisionNodeBody; }
 
+	//	消滅状態取得
+	bool GetDeath();
+	//	消滅状態セット
+	void SetDeath();
+
 private:
 	//	自機の移動座標
 	DirectX::SimpleMath::Vector3 m_headPos;
@@ -50,7 +56,7 @@ private:
 	//	自機オブジェクト
 	std::vector<Obj3d> m_ObjEnemy;
 	//	状態
-	bool m_enemyState;
+	//bool m_enemyState;
 	//	sin用の角度
 	float m_cycle;
 
@@ -60,6 +66,8 @@ private:
 	float m_distAngle;
 	//	敵本体の当たり判定
 	SphereNode m_CollisionNodeBody;
+	//	消滅状態取得
+	bool m_deathFlag;
 
 };
 

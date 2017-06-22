@@ -35,14 +35,15 @@ void Enemy::Initialize()
 	m_ObjEnemy[ENEMY_PARTS_ARM_LEFT].SetRotation(Vector3(0, 30.0f, 0));
 
 	//	状態の初期化(オフ)
-	m_enemyState = false;
+	//m_enemyState = false;
+	m_deathFlag = false;
 
 	//	初期位置を設定
 	Vector3 pos;
 	pos.x = rand() % 10;
 	pos.z = rand() % 10;
 
-//	SetTranslation(pos);
+	SetTranslation(pos);
 
 	//	初期化
 	m_timer = 0;
@@ -205,4 +206,18 @@ void Enemy::Draw()
 
 	//	敵本体用当たり判定ノード
 	m_CollisionNodeBody.Draw();
+}
+
+//=============消す候補=======================//
+
+bool Enemy::GetDeath()
+{
+	return m_deathFlag;
+}
+
+void Enemy::SetDeath()
+{
+	m_deathFlag = true;
+
+	m_ObjEnemy.pop_back();
 }

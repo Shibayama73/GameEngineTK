@@ -112,12 +112,12 @@ void Game::Initialize(HWND window, int width, int height)
 	m_player = new Player();
 	m_player->Initialize(m_keyboard.get(),m_tracker.get());
 
-	//	敵の生成
-	for (int i = 0; i < ENEMY_NUM; i++)
-	{
-		m_enemy[i] = new Enemy();
-		m_enemy[i]->Initialize();
-	}
+	////	敵の生成
+	//for (int i = 0; i < ENEMY_NUM; i++)
+	//{
+	//	m_enemy[i] = new Enemy();
+	//	m_enemy[i]->Initialize();
+	//}
 
 	//	追従カメラにプレイヤーをセット
 //	m_Camera->SetPlayer(m_player);
@@ -125,12 +125,12 @@ void Game::Initialize(HWND window, int width, int height)
 //	m_headPos = Vector3(0, 0, 30);
 
 	//	敵の生成
-//	int enemyNum = rand() % 10 + 1;
-//	m_enemys.resize(enemyNum);
-//	for (int i = 0; i < enemyNum; i++) {
-//		m_enemys[i] = std::make_unique<Enemy>(m_keyboard.get());
-//		m_enemys[i]->Initialize();
-//	}
+	int enemyNum = rand() % 10 + 1;
+	m_enemys.resize(enemyNum);
+	for (int i = 0; i < enemyNum; i++) {
+		m_enemys[i] = std::make_unique<Enemy>();
+		m_enemys[i]->Initialize();
+	}
 
 	//====================================================================
 	
@@ -201,11 +201,78 @@ void Game::Update(DX::StepTimer const& timer)
 	//	プレイヤーの更新
 	m_player->Update();
 
-	//	敵の更新
-	for (int i = 0; i < ENEMY_NUM; i++)
+	////	敵の更新
+	//for (int i = 0; i < ENEMY_NUM; i++)
+	//{
+	//	m_enemy[i]->Update();
+	//}
+
+	for (std::vector<std::unique_ptr<Enemy>>::iterator it = m_enemys.begin();
+	it != m_enemys.end();it++)
 	{
-		m_enemy[i]->Update();
+	Enemy* enemy = it->get();
+	enemy->Update();
 	}
+
+	//==================================================================================//
+
+	{//	弾丸と敵の当たり判定
+		const Sphere& bulletSphere = m_player->GetCollisionNodeBullet();
+
+		//	敵の数だけ処理する(初期化;条件;増減なし)
+		for (std::vector<std::unique_ptr<Enemy>>::iterator it = m_enemys.begin();
+			it != m_enemys.end();)
+		{
+			Enemy* enemy = it->get();
+			//	敵の球判定を取得
+			const Sphere& enemySphere = enemy->GetCollisionNodeBody();
+
+			//	二つの球が当たっていたら
+			if (CheckSphere2Sphere(bulletSphere, enemySphere))
+			{
+				//	敵を消す
+				//	消した要素の次の要素を指すイテレーター
+				it = m_enemys.erase(it);
+			}
+			else
+			{
+				//	消さなかった場合、イテレーターを進める
+				it++;
+			}
+		}
+
+	}
+
+	//==================================================================================//
+	
+	//{//	弾丸と敵の当たり判定
+	//	const Sphere& bulletSphere = m_player->GetCollisionNodeBullet();
+
+	//	//	敵の数だけ処理する(初期化;条件;増減なし)
+	//	for (int i = 0; i < ENEMY_NUM;i++)
+	//	{
+	//		//	既に消滅している敵はスキップする
+	//		if (m_enemy[i]->GetDeath()) continue;
+	//		//	敵の球判定を取得
+	//		const Sphere& enemySphere = m_enemy[i]->GetCollisionNodeBody();
+
+	//		//	衝突点の座標を入れる変数
+	//		Vector3 inter;
+
+	//		//	二つの球が当たっていたら
+	//		if (CheckSphere2Sphere(bulletSphere, enemySphere))
+	//		{
+	//			//	弾丸を元の位置に戻す
+	//			m_player->ResetBuller();
+	//			//	敵が消滅する
+	//			m_enemy[i]->SetDeath();
+	//		}
+	//	}
+
+	//}
+
+	//==================================================================================//
+
 	/*for (std::vector<std::unique_ptr<Enemy>>::iterator it = m_enemys.begin();
 		it != m_enemys.end();it++)
 	{
@@ -566,17 +633,17 @@ void Game::Render()
 	m_player->Draw();
 
 	//	敵の描画
-	for (int i = 0; i < ENEMY_NUM; i++)
+	/*for (int i = 0; i < ENEMY_NUM; i++)
 	{
 		m_enemy[i]->Draw();
-	}
-	/*for (std::vector<std::unique_ptr<Enemy>>::iterator it = m_enemys.begin();
+	}*/
+	for (std::vector<std::unique_ptr<Enemy>>::iterator it = m_enemys.begin();
 		it != m_enemys.end(); it++)
 	{
 		Enemy* enemy = it->get();
 		enemy->Draw();
 	}
-*/
+
 	//m_modelSkydome->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
 	////m_modelGround->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
 	//m_modelGround->Draw(m_d3dContext.Get(), *m_states, Matrix::Identity, m_view, m_proj);

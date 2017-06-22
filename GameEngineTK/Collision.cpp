@@ -20,8 +20,9 @@ bool CheckSphere2Sphere(const Sphere& _sphereA, const Sphere& _sphereB)
 
 	//	”¼Œa‚Ì˜a‚ÌŒvŽZ
 	//float radius = _sphereA.Radius + _sphereB.Radius;
+	float radiusSquare = _sphereA.Radius + _sphereB.Radius;
 	//	”¼Œa‚Ì˜a‚Ì‚Qæ‚ÌŒvŽZ
-	float radiusSquare = radiusSquare * radiusSquare;
+	radiusSquare = radiusSquare * radiusSquare;
 	
 	//	‹——£‚ª”¼Œa‚Ì˜a‚æ‚è‘å‚«‚¢‚Æ‚«
 	if (distanceSqare > radiusSquare) {

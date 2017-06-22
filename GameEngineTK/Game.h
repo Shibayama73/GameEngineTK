@@ -162,7 +162,7 @@ private:
 
 	static const int ENEMY_NUM = 3;
 	//	“G
-	Enemy* m_enemy[ENEMY_NUM];
-	//std::vector<std::unique_ptr<Enemy>> m_enemys;
+	//Enemy* m_enemy[ENEMY_NUM];
+	std::vector<std::unique_ptr<Enemy>> m_enemys;
 
 };

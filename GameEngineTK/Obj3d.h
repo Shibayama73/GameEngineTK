@@ -39,6 +39,8 @@ private:
 public:
 	//	コンストラクタ
 	Obj3d();
+	//	コピーコンストラクタ
+	Obj3d(const Obj3d& obj);
 
 	//	CMOモデルを読み込む
 	void LoadModel(const wchar_t* fileName);

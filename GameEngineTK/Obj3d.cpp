@@ -43,6 +43,12 @@ Obj3d::Obj3d()
 
 }
 
+Obj3d::Obj3d(const Obj3d & obj)
+{
+	//this->m_modelHead = std::move(obj.m_modelHead);
+	//this->m_modelHead = obj.m_modelHead;
+}
+
 void Obj3d::LoadModel(const wchar_t * fileName)
 {
 	//	CMO‚©‚çƒ‚ƒfƒ‹‚Ì“Ç‚İ‚İ
