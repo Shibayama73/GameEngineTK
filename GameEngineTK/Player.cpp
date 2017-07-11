@@ -57,6 +57,19 @@ void Player::Initialize(DirectX::Keyboard* keyboard, DirectX::Keyboard::Keyboard
 		m_CollisionNodeBullet.SetLocalRadius(0.3f);
 	}
 
+	{//	本体の当たり判定ノードの設定
+		m_CollisionNodeBody.Initialize();
+
+		//	親パーツのを設定
+		m_CollisionNodeBody.SetParent(&m_ObjPlayer[PLAYER_PARTS_TIRE]);
+		m_CollisionNodeBody.SetTrans(Vector3(0, 0.1f, 0));
+		m_CollisionNodeBody.SetLocalRadius(0.1f);
+
+	}
+
+	//	ジャンプフラグをオフ
+	m_isJump = false;
+
 }
 
 void Player::Update()
@@ -69,6 +82,29 @@ void Player::Update()
 	//	キーボードの状態取得
 	Keyboard::State key = m_keyboard->GetState();
 	m_tracker->Update(key);
+
+	if (m_tracker->IsKeyPressed(Keyboard::Keys::Z))
+	{
+		//	ジャンプする
+		StartJump();
+	}
+	//	ジャンプ中のとき
+	if (m_isJump)
+	{
+		//	重力による加速
+		m_Velocity.y -= GRAVITY_ACC;
+
+		if (m_Velocity.y < -JUMP_SPEED_MAX)
+		{
+			m_Velocity.y = -JUMP_SPEED_MAX;
+		}
+	}
+
+	{//	速度による移動
+		Vector3 trans = GetTranslation();
+		trans += m_Velocity;
+		SetTranslation(trans);
+	}
 
 	//	Xキーが押されたとき
 	if (m_tracker->pressed.X)
@@ -108,7 +144,7 @@ void Player::Update()
 	if (key.W)
 	{
 		//	移動ベクトル(Z座標前進)
-		Vector3 moveV(0, 0, -0.1f);
+		Vector3 moveV(0, 0, -0.15f);
 		//	回転
 		float angle = m_ObjPlayer[0].GetRotation().y;
 		Matrix rotmat = Matrix::CreateRotationY(angle);
@@ -206,20 +242,12 @@ void Player::Update()
 	}
 
 
-
-	//	自機オブジェクトの更新
-	for (std::vector<Obj3d>::iterator it = m_ObjPlayer.begin();
-		it != m_ObjPlayer.end();
-		it++)
-	{
-		it->Update();
-	}
+	this->Calc();
 
 	//	デバッグ用
 	//FireBullet();
-
-	//	弾丸用当たり判定ノード
-	m_CollisionNodeBullet.Update();
+	
+	
 
 }
 
@@ -234,6 +262,8 @@ void Player::Draw()
 	}
 	//	弾丸用当たり判定ノード
 	m_CollisionNodeBullet.Draw();
+	//	本体用当たり判定ノード
+	m_CollisionNodeBody.Draw();
 
 }
 
@@ -257,7 +287,7 @@ void Player::FireBullet()
 	m_ObjPlayer[PLAYER_PARTS_TOP].SetTranslation(translation);
 
 	//	弾丸パーツの速度を設定
-	m_BulletVel = Vector3(0, 0, -0.1f);
+	m_BulletVel = Vector3(0, 0, -0.3f);
 	//	パーツの向きに合わせて速度ベクトルを回転
 	m_BulletVel = Vector3::Transform(m_BulletVel, rotation);
 
@@ -277,4 +307,54 @@ void Player::ResetBuller()
 	//	大きさのリセット
 	m_ObjPlayer[PLAYER_PARTS_TOP].SetScale(Vector3(1, 1, 1));
 
+}
+
+void Player::Calc()
+{
+	//	自機オブジェクトの更新
+	for (std::vector<Obj3d>::iterator it = m_ObjPlayer.begin();
+		it != m_ObjPlayer.end();
+		it++)
+	{
+		it->Update();
+	}
+
+	//	弾丸用当たり判定ノード
+	m_CollisionNodeBullet.Update();
+	//	本体用の当たり判定ノード
+	m_CollisionNodeBody.Update();
+
+}
+
+/// <summary>
+/// ジャンプを開始
+/// </summary>
+void Player::StartJump()
+{
+	if (!m_isJump)
+	{
+		m_Velocity.y = JUMP_SPEED_FIRST;
+		m_isJump = true;
+	}
+}
+
+/// <summary>
+/// 落下を開始
+/// </summary>
+void Player::StartFall()
+{
+	if (!m_isJump)
+	{
+		m_Velocity.y = 0;
+		m_isJump = true;
+	}
+}
+
+/// <summary>
+/// 落下を終了
+/// </summary>
+void Player::StopJump()
+{
+	m_isJump = false;
+	m_Velocity = Vector3::Zero;
 }

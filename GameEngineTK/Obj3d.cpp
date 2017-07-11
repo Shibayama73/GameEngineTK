@@ -43,11 +43,11 @@ Obj3d::Obj3d()
 
 }
 
-Obj3d::Obj3d(const Obj3d & obj)
-{
-	//this->m_modelHead = std::move(obj.m_modelHead);
-	//this->m_modelHead = obj.m_modelHead;
-}
+//Obj3d::Obj3d(const Obj3d & obj)
+//{
+//	//this->m_modelHead = std::move(obj.m_modelHead);
+//	//this->m_modelHead = obj.m_modelHead;
+//}
 
 void Obj3d::LoadModel(const wchar_t * fileName)
 {
@@ -119,9 +119,9 @@ void Obj3d::Draw()
 {
 	//	•`‰æ
 	//	Ý’è
-	m_d3dContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
-	m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);	//	‰œs
-	m_d3dContext->RSSetState(m_states->CullClockwise());
+	//m_d3dContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+	//m_d3dContext->OMSetDepthStencilState(m_states->DepthNone(), 0);	//	‰œs
+	//m_d3dContext->RSSetState(m_states->CullClockwise());
 
 	
 	//	ƒ‚ƒfƒ‹‚Ì•`‰æ

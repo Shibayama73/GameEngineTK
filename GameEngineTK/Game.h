@@ -18,9 +18,14 @@
 
 #include <Model.h>
 
+#include <SimpleMath.h>
+#include <SpriteBatch.h>
+
 #include "Obj3d.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "ModelEffect.h"
+#include "LandShape.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -111,6 +116,7 @@ private:
 	//std::unique_ptr<DirectX::Model> m_modelSkydome;	//天球
 	Obj3d m_modelSkydome;								//天球
 	//std::unique_ptr<DirectX::Model> m_modelGround;	//地面
+	LandShape m_LandShape;								//地面
 	//std::unique_ptr<DirectX::Model> m_modelSky;		//空球
 	//std::unique_ptr<DirectX::Model> m_modelTespot;	//ティーポット
 	//std::unique_ptr<DirectX::Model> m_modelHead;	//機体
@@ -164,5 +170,14 @@ private:
 	//	敵
 	//Enemy* m_enemy[ENEMY_NUM];
 	std::vector<std::unique_ptr<Enemy>> m_enemys;
+
+	//	敵の数
+	int enemyNum;
+	//	消滅した敵の数
+	int enemyExtinction;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
+	DirectX::SimpleMath::Vector2 m_screenPos;	//スプライト表示スクリーン座標
+	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
 
 };

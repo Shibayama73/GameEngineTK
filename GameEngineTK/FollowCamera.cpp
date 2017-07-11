@@ -22,6 +22,27 @@ FollowCamera::FollowCamera(int width, int height)
 	//	プレイヤー
 //	m_player = nullptr;
 
+
+	{//	TPSカメラの処理
+		Vector3 eyepos, refpos;
+		//	参照点座標の計算
+		refpos = m_targetPos + Vector3(0, 2.0f, 0);
+		//	自機からカメラまでの距離
+		Vector3 cameraV(0, 0, CAMERA_DISTANCE);
+
+		//	自機から後ろに回り込むための回転行列
+		Matrix rotmat = Matrix::CreateRotationY(m_targetAngle);
+		//	カメラへのベクトルを回転させる
+		cameraV = Vector3::TransformNormal(cameraV, rotmat);
+
+		//	カメラ座標を計算
+		eyepos = refpos + cameraV;
+
+		//	カメラに情報を渡す
+		this->SetRefPos(refpos);
+		this->SetEyePos(eyepos);
+	}
+
 }
 
 //	更新

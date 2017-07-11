@@ -10,6 +10,16 @@
 class CollisionNode
 {
 public:
+	//	デバッグ表示フラグ取得
+	static bool GetDebugVisible() { return m_DebugVisible; }
+	//	デバッグ表示フラグセット
+	static void SetDebugVisible(bool visible) { m_DebugVisible = visible; }
+
+protected:
+	//	デバッグフラグ表示ON
+	static bool m_DebugVisible;
+
+public:
 	//	初期化
 	virtual void Initialize() = 0;
 	//	更新

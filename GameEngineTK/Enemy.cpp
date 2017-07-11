@@ -36,7 +36,7 @@ void Enemy::Initialize()
 
 	//	ó‘Ô‚Ì‰Šú‰»(ƒIƒt)
 	//m_enemyState = false;
-	m_deathFlag = false;
+	//m_deathFlag = false;
 
 	//	‰ŠúˆÊ’u‚ğİ’è
 	Vector3 pos;
@@ -208,16 +208,3 @@ void Enemy::Draw()
 	m_CollisionNodeBody.Draw();
 }
 
-//=============Á‚·Œó•â=======================//
-
-bool Enemy::GetDeath()
-{
-	return m_deathFlag;
-}
-
-void Enemy::SetDeath()
-{
-	m_deathFlag = true;
-
-	m_ObjEnemy.pop_back();
-}

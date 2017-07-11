@@ -5,6 +5,10 @@
 #include "pch.h"
 #include "Game.h"
 
+#include <WICTextureLoader.h>	//CreateWICTextureFromFile()
+#include <DDSTextureLoader.h>
+#include <CommonStates.h>
+
 extern void ExitGame();
 
 using namespace DirectX;
@@ -49,9 +53,21 @@ void Game::Initialize(HWND window, int width, int height)
 
 	//	静的メンバ変数の初期化
 	Obj3d::InitializeStatic(m_d3dDevice, m_d3dContext, m_Camera.get());
-	
+
+	{//	土地当たりの設定
+		LandShapeCommonDef lscDef;
+		lscDef.pDevice = m_d3dDevice.Get();
+		lscDef.pDeviceContext = m_d3dContext.Get();
+		lscDef.pCamera = m_Camera.get();
+
+		//	土地当たりの共通初期化
+		LandShape::InitializeCommon(lscDef);
+	}
+
 	//m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(m_d3dContext.Get());		//	Get()で生ポインタを渡す
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionNormal>>(m_d3dContext.Get());		//	Get()で生ポインタを渡す
+	
+	m_spriteBatch = std::make_unique<SpriteBatch>(m_d3dContext.Get());
 
 	m_effect = std::make_unique<BasicEffect>(m_d3dDevice.Get());		//	Get()で生ポインタを渡す
 
@@ -79,8 +95,22 @@ void Game::Initialize(HWND window, int width, int height)
 	//	テクスチャファイル指定
 //	m_factory->SetDirectory(L"Resources");
 
+
+	//	リソース読み込み
+	ComPtr<ID3D11Resource> resource;
+	DX::ThrowIfFailed(
+		CreateWICTextureFromFile(m_d3dDevice.Get(), L"Resources/clear.png",resource.GetAddressOf(),
+			m_texture.ReleaseAndGetAddressOf()));
+	//	表示座標を画面中央に指定
+	m_screenPos.x = m_outputWidth / 5.0f;
+	m_screenPos.y = m_outputHeight / 10.0f;
+
 	//	モデル生成
 	m_modelSkydome.LoadModel(L"Resources/Skydome.cmo");
+	//	地形データの読込み(landshape、cmoファイル名)
+	m_LandShape.Initialize(L"Ground200", L"Ground200");
+	//m_LandShape.SetRot(Vector3(0.5f, 0, 0));
+
 	//m_modelSkydome=LoadModule(L"Resources/Skydome.cmo");
 	//m_modelSkydome = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Skydome.cmo", *m_factory);
 	////m_modelGround = Model::CreateFromCMO(m_d3dDevice.Get(), L"Resources/Ground.cmo", *m_factory);
@@ -125,12 +155,15 @@ void Game::Initialize(HWND window, int width, int height)
 //	m_headPos = Vector3(0, 0, 30);
 
 	//	敵の生成
-	int enemyNum = rand() % 10 + 1;
+	enemyNum = rand() % 10 + 2;
 	m_enemys.resize(enemyNum);
 	for (int i = 0; i < enemyNum; i++) {
 		m_enemys[i] = std::make_unique<Enemy>();
 		m_enemys[i]->Initialize();
 	}
+
+	//	消滅した敵の数初期化
+	enemyExtinction = 0;
 
 	//====================================================================
 	
@@ -214,6 +247,22 @@ void Game::Update(DX::StepTimer const& timer)
 	enemy->Update();
 	}
 
+	////	消滅エフェクト
+	//ModelEffectManager::getInstance()->Entry(
+	//	L"Resources/effect.cmo",	//モデルファイル
+	//	10,							//フレーム数
+	//	m_player->GetTranslation() + Vector3(0, 0.5f, 0), 	//座標
+	//	Vector3(0, 0, 0),			//速度
+	//	Vector3(0, 0, 0),			//加速度
+	//	Vector3(0, 0, 0),			//始めの回転角
+	//	Vector3(0, 0, 0),			//終わりの回転角
+	//	Vector3(2, 2, 2),			//始めのスケール
+	//	Vector3(4, 4, 4)			//終わりのスケール
+	//);
+
+	//	消滅エフェクト
+	ModelEffectManager::getInstance()->Update();
+
 	//==================================================================================//
 
 	{//	弾丸と敵の当たり判定
@@ -230,9 +279,25 @@ void Game::Update(DX::StepTimer const& timer)
 			//	二つの球が当たっていたら
 			if (CheckSphere2Sphere(bulletSphere, enemySphere))
 			{
+				//	消滅エフェクト
+				ModelEffectManager::getInstance()->Entry(
+					L"Resources/effect.cmo",	//モデルファイル
+					10,							//フレーム数
+					enemy->GetTranslation() + Vector3(0, 0.5f, 0), 	//座標
+					Vector3(0, 0, 0),			//速度
+					Vector3(0, 0, 0),			//加速度
+					Vector3(0, 0, 0),			//始めの回転角
+					Vector3(0, 0, 0),			//終わりの回転角
+					Vector3(2, 2, 2),			//始めのスケール
+					Vector3(4, 4, 4)			//終わりのスケール
+				);
+
 				//	敵を消す
 				//	消した要素の次の要素を指すイテレーター
 				it = m_enemys.erase(it);
+
+				//	消滅した敵の数を増やす
+				enemyExtinction++;
 			}
 			else
 			{
@@ -242,6 +307,13 @@ void Game::Update(DX::StepTimer const& timer)
 		}
 
 	}
+
+	////	全ての敵が消滅したとき
+	//if (enemyExtinction == enemyNum)
+	//{
+	//	//	クリア表示
+	//	int i = 0;
+	//}
 
 	//==================================================================================//
 	
@@ -538,12 +610,74 @@ void Game::Update(DX::StepTimer const& timer)
 	//	モデルの更新
 	m_modelSkydome.Update();
 
+	//	地面モデルの更新
+	m_modelSkydome.Update();
+
 	/*for (std::vector<Obj3d>::iterator it = m_ObjPlayer.begin();
 		it != m_ObjPlayer.end();
 		it++)
 	{
 		it->Update();
 	}*/
+
+	//	自機の地形へのめり込みを解消する
+	{
+		Sphere sphere = m_player->GetCollisionNodeBody();
+
+		//	自機のワールド座標
+		Vector3 trans = m_player->GetTranslation();
+		//	球からプレイヤーへのベクトル
+		Vector3 sphere2player = trans - sphere.Center;
+		//	めり込み排斥ベクトル
+		Vector3 reject;
+		//	球と地形の当たり判定
+		if (m_LandShape.IntersectSphere(sphere, &reject))
+		{
+			//	めり込み解消するように球をずらす
+			sphere.Center += reject;
+		}
+		//	自機を移動
+		m_player->SetTranslation(sphere.Center + sphere2player);
+		//	ワールド行列を更新
+		m_player->Calc();
+
+	}
+
+	{//	自機が地面に乗る処理
+		const Vector3 vel = m_player->GetVelocity();
+		if (vel.y <= 0.0f)
+		{
+			//	自機の頭から足元への線分
+			Segment player_segment;
+			//	自機のワールド座標
+			Vector3 trans = m_player->GetTranslation();
+			player_segment.Start = trans + Vector3(0, 1, 0);
+			//	足元50センチ下まで地面を検出
+			player_segment.End = trans + Vector3(0, -0.5f, 0);
+
+			//	交点座標
+			Vector3 inter;
+			//	地形と線分の当たり判定(レイキャスト)
+			if (m_LandShape.IntersectSegment(player_segment, &inter))
+			{
+				//	Y座標を交点に移動させる
+				trans.y = inter.y;
+				//	落下を終了
+				m_player->StopJump();
+			}
+			else
+			{
+				//	落下を開始
+				m_player->StartFall();
+			}
+
+			//	自機を移動
+			m_player->SetTranslation(trans);
+			//	ワールド行列を更新
+			m_player->Calc();
+		}
+	}
+
 
 }
 
@@ -629,6 +763,10 @@ void Game::Render()
 
 	//	天球モデルの描画
 	m_modelSkydome.Draw();
+
+	//	地面モデルの描画
+	m_LandShape.Draw();
+
 	//	プレイヤーの描画
 	m_player->Draw();
 
@@ -643,6 +781,10 @@ void Game::Render()
 		Enemy* enemy = it->get();
 		enemy->Draw();
 	}
+
+	//	消滅エフェクト
+	ModelEffectManager::getInstance()->Draw();
+
 
 	//m_modelSkydome->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
 	////m_modelGround->Draw(m_d3dContext.Get(), *m_states, m_world, m_view, m_proj);
@@ -672,7 +814,7 @@ void Game::Render()
 
 	//	描画
 	m_batch->Begin();
-
+	
 	m_batch->DrawIndexed(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indices,6, vertices, 4);
 
 	//VertexPositionColor v1(Vector3(0.f, 0.5f, 0.5f), Colors::Red);
@@ -692,7 +834,18 @@ void Game::Render()
 
 	m_batch->End();
 
-	
+	//=======================================================================
+	//	テクスチャの描画
+	CommonStates m_states(m_d3dDevice.Get());
+	m_spriteBatch->Begin(SpriteSortMode_Deferred, m_states.NonPremultiplied());	//NonPremultipliedで不透明の設定
+
+	//	全ての敵が消滅したとき
+	if (enemyExtinction == enemyNum)
+	{
+		//	クリア表示
+		m_spriteBatch->Draw(m_texture.Get(), m_screenPos, nullptr, Colors::White, 0.f);
+	}
+	m_spriteBatch->End();
 
 	//=======================================================================
 

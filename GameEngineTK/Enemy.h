@@ -43,11 +43,6 @@ public:
 	//	敵本体の当たり判定取得
 	const SphereNode& GetCollisionNodeBody() { return m_CollisionNodeBody; }
 
-	//	消滅状態取得
-	bool GetDeath();
-	//	消滅状態セット
-	void SetDeath();
-
 private:
 	//	自機の移動座標
 	DirectX::SimpleMath::Vector3 m_headPos;
@@ -66,8 +61,6 @@ private:
 	float m_distAngle;
 	//	敵本体の当たり判定
 	SphereNode m_CollisionNodeBody;
-	//	消滅状態取得
-	bool m_deathFlag;
 
 };
 

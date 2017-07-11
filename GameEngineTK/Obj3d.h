@@ -40,7 +40,7 @@ public:
 	//	コンストラクタ
 	Obj3d();
 	//	コピーコンストラクタ
-	Obj3d(const Obj3d& obj);
+	//Obj3d(const Obj3d& obj);
 
 	//	CMOモデルを読み込む
 	void LoadModel(const wchar_t* fileName);
@@ -60,6 +60,7 @@ public:
 	//	平行移動(XYZ)
 	void SetTranslation(const DirectX::SimpleMath::Vector3& translation) { m_translation = translation; }
 	//	ワールド行列
+	void SetWorld(const DirectX::SimpleMath::Matrix& world) { m_world = world; }
 	//	親の3Dオブジェクト
 	void SetObjParent(Obj3d* objParentle) { m_ObjParent = objParentle; }
 

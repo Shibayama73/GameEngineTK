@@ -1,6 +1,9 @@
 #include "CollisionNode.h"
 using namespace DirectX::SimpleMath;
 
+//	ƒƒ“ƒo•Ï”À‘Ô
+bool CollisionNode::m_DebugVisible = true;
+
 //========================================================
 //CollisionNode‚Ìƒƒ“ƒoŠÖ”
 //========================================================
